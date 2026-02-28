@@ -66,19 +66,6 @@ Modes:
 - `outputs/production_demo_results.json`
 - `outputs/production_demo_summary.txt`
 
-## Presentation Guide
-
-Use the full presenter script here:
-
-**[PRESENTATION_GUIDE.md](PRESENTATION_GUIDE.md)**
-
-This guide contains:
-- timing and speaking points
-- live commands
-- expected behavior by scenario
-- Q&A prep
-- pitfalls to avoid
-
 ## Public Release Checklist
 
 - [ ] Confirm the app runs (`streamlit` + terminal)
