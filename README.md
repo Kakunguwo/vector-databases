@@ -1,33 +1,26 @@
-# Vector Databases + RAG Demo (English vs Shona)
+# Vector Database Demo: Shona vs English (RAG Presentation)
 
-Interactive demo project for presenting:
-- Vector embeddings
-- Cosine similarity search
-- Cross-language retrieval challenges
-- Translation-assisted retrieval for low-resource languages
-- Streamlit visualization of high-dimensional vectors projected to 2D
+This project is built around one core experiment:
 
-## Project Structure
+**Why does vector search work well for English, but fail for Shona unless we add translation?**
 
-- `vector-demo.py` - terminal guided demo (scenario-by-scenario)
-- `streamlit_demo.py` - presentation-friendly web UI
-- `embed.py` - simple Ollama embedding example
-- `notes/` - supporting presentation notes
+It demonstrates the failure mode and a practical production-ready fix.
 
-## Demo Scenarios
+## What This Demo Proves
 
-1. English baseline (works well)
-2. Shona direct embedding (degraded quality)
-3. Shona with translation pipeline (improved retrieval)
-4. Bilingual mixed database
-5. Final summary report
+1. **English baseline works** with standard embedding models.
+2. **Direct Shona embedding is unreliable** with English-centric models.
+3. **Translation pipeline restores useful semantic retrieval**.
+4. **Bilingual retrieval is possible** in one system.
 
-## Requirements
+## Files
 
-- Python 3.10+
-- Internet access (for model/translator on first use)
+- `vector-demo.py` - terminal guided scenario demo
+- `streamlit_demo.py` - presentation UI with vector-space visualization
+- `embed.py` - minimal Ollama embedding example
+- `notes/` - supporting notes
 
-Install dependencies:
+## Quick Start
 
 ```bash
 python -m venv venv
@@ -35,60 +28,70 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run Options
+## Run the Demo
 
-### 1) Streamlit UI (recommended for presentations)
+### Option A: Streamlit UI (best for non-technical audience)
 
 ```bash
 streamlit run streamlit_demo.py
 ```
 
-What the UI includes:
-- Guided section-by-section execution
-- Quick run per section
-- Cosine similarity visualizer
-- 2D projection of high-dimensional vectors (dots)
-- Threshold-based vector selection
-- Pick-nearest-vector by target cosine value
+Includes:
+- step-by-step scenario control
+- cosine similarity visualizer
+- high-dimensional vectors projected to 2D dots
+- cosine threshold selection
+- nearest-vector pick by target cosine value
 
-### 2) Terminal Guided Demo
+### Option B: Terminal mode
 
 ```bash
 python3 vector-demo.py
 ```
 
-Choose mode:
-- Guided mode (press continue between sections)
-- Auto-run all sections
+Modes:
+- guided mode (press continue between sections)
+- auto-run mode
 
-## Outputs
+## Scenario Flow (Story Arc)
 
-Generated files are saved to:
+1. English success
+2. Shona failure (without translation)
+3. Translation fix
+4. Bilingual mixed retrieval
+5. Final report
+
+## Output Files
+
 - `outputs/production_demo_results.json`
 - `outputs/production_demo_summary.txt`
 
-## Presentation Script (Short)
+## Presentation Guide
 
-- Start with Streamlit UI and run sections one at a time.
-- Show that vectors are high-dimensional but projected to 2D for intuition.
-- Use cosine threshold slider to explain selection boundaries.
-- Use target cosine value to show exactly which vector gets picked.
-- Compare direct Shona retrieval vs translation pipeline.
+Use the full presenter script here:
+
+**[PRESENTATION_GUIDE.md](PRESENTATION_GUIDE.md)**
+
+This guide contains:
+- timing and speaking points
+- live commands
+- expected behavior by scenario
+- Q&A prep
+- pitfalls to avoid
 
 ## Public Release Checklist
 
-Before publishing:
-- [ ] Remove any private keys or secrets
-- [ ] Verify `venv/` is ignored
-- [ ] Run the app once to confirm no runtime errors
-- [ ] Add your repo URL in this README
+- [ ] Confirm the app runs (`streamlit` + terminal)
+- [ ] Ensure `venv/` and `outputs/` are not tracked
+- [ ] Review docs for final wording
+- [ ] Push to GitHub
 
-## GitHub Publish Commands
+## Publish to GitHub
 
 ```bash
 git init
 git add .
-git commit -m "Initial public release: vector DB + RAG demo"
+git commit -m "Initial public release: vector DB + RAG presentation demo"
 git branch -M main
 git remote add origin <YOUR_GITHUB_REPO_URL>
 git push -u origin main
@@ -96,4 +99,4 @@ git push -u origin main
 
 ## License
 
-MIT License (see LICENSE file).
+MIT (see [LICENSE](LICENSE)).
