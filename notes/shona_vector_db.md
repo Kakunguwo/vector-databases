@@ -8,7 +8,7 @@
 
 **Will standard embedding models understand Shona?**
 
-❌ **No, most popular embedding models will NOT understand Shona properly.**
+**No, most popular embedding models will NOT understand Shona properly.**
 
 Here's what actually happens:
 
@@ -36,8 +36,10 @@ graph TD
 
 ### 1. Training Data Distribution
 
+**Training Data by Language (Typical Model)**
+
 ```mermaid
-pie title Training Data by Language (Typical Model)
+pie
     "English" : 85
     "Chinese" : 5
     "Spanish" : 3
@@ -226,10 +228,10 @@ graph TD
     A --> D[Google Universal<br/>Sentence Encoder]
     A --> E[XLM-RoBERTa]
     
-    B --> F[Support: 109 languages<br/>Shona: Limited ⚠️]
-    C --> G[Support: 50+ languages<br/>Shona: Very Limited ⚠️]
-    D --> H[Support: 16 languages<br/>Shona: None ❌]
-    E --> I[Support: 100 languages<br/>Shona: Limited ⚠️]
+    B --> F[Support: 109 languages<br/>Shona: Limited]
+    C --> G[Support: 50+ languages<br/>Shona: Very Limited]
+    D --> H[Support: 16 languages<br/>Shona: None]
+    E --> I[Support: 100 languages<br/>Shona: Limited]
     
     style F fill:#fff9c4
     style G fill:#fff9c4
@@ -354,15 +356,15 @@ results = rag.search_shona("Tsvaga vanhu vakafara")
 ```
 
 **Pros:**
-- ✅ Works with existing high-quality English models
-- ✅ Better accuracy than poor Shona embeddings
-- ✅ Can leverage massive English ecosystem
+- Works with existing high-quality English models
+- Better accuracy than poor Shona embeddings
+- Can leverage massive English ecosystem
 
 **Cons:**
-- ❌ Translation errors compound
-- ❌ Loses Shona-specific nuances
-- ❌ Extra latency (translation time)
-- ❌ Extra cost (translation API)
+- Translation errors compound
+- Loses Shona-specific nuances
+- Extra latency (translation time)
+- Extra cost (translation API)
 
 ---
 
@@ -510,10 +512,10 @@ class HybridShonaSearch:
 ```
 
 **Why this works:**
-- ✅ Semantic search catches meaning (via translation)
-- ✅ Keyword search catches exact Shona terms
-- ✅ Combined: Better than either alone
-- ✅ No fine-tuning required
+- Semantic search catches meaning (via translation)
+- Keyword search catches exact Shona terms
+- Combined: Better than either alone
+- No fine-tuning required
 
 ---
 
@@ -740,9 +742,9 @@ graph TD
 
 | Shona | Literal Translation | Actual Meaning | Impact |
 |-------|-------------------|----------------|--------|
-| "Kufa kwedu kunokwanisa" | "Our death can suffice" | "We're all mortal" | ⚠️ Meaning lost |
-| "Mukadzi haasi sadza" | "Wife is not sadza" | "Don't treat wife like food" | ⚠️ Idiom lost |
-| "Mudzimu" | "Spirit/ancestor" | Complex cultural concept | ⚠️ Oversimplified |
+| "Kufa kwedu kunokwanisa" | "Our death can suffice" | "We're all mortal" | Meaning lost |
+| "Mukadzi haasi sadza" | "Wife is not sadza" | "Don't treat wife like food" | Idiom lost |
+| "Mudzimu" | "Spirit/ancestor" | Complex cultural concept | Oversimplified |
 
 ---
 
@@ -932,13 +934,13 @@ timeline
 
 ```mermaid
 graph TD
-    A[Using Standard<br/>English Models] --> B[NO ❌]
+    A[Using Standard<br/>English Models] --> B[NO]
     B --> C[Random embeddings<br/>Similarity meaningless]
     
-    D[Using Translation<br/>Pipeline] --> E[YES ✅]
+    D[Using Translation<br/>Pipeline] --> E[YES]
     E --> F[Indirect, but works<br/>75-80% accuracy]
     
-    G[Using Fine-tuned<br/>Shona Model] --> H[YES ✅✅]
+    G[Using Fine-tuned<br/>Shona Model] --> H[YES - BEST]
     H --> I[Direct understanding<br/>85-90% accuracy]
     
     style C fill:#ffcdd2
@@ -958,15 +960,15 @@ graph TD
 ```python
 # Day 1: Test if you even need semantic search
 accuracy_english_model = test_direct_embedding()
-# Result: 15-20% accuracy → Don't use
+# Result: 15-20% accuracy -> Don't use
 
 # Day 2: Try translation approach
 accuracy_translation = test_translation_pipeline()
-# Result: 70-80% accuracy → Good enough for most!
+# Result: 70-80% accuracy -> Good enough for most
 
 # Day 3: Add hybrid search
 accuracy_hybrid = test_hybrid_approach()
-# Result: 75-85% accuracy → Best practical solution
+# Result: 75-85% accuracy -> Best practical solution
 
 # Later: Fine-tune if you have data and need >85% accuracy
 ``` -->

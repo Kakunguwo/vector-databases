@@ -1,5 +1,6 @@
 import io
 import importlib.util
+import re
 from contextlib import redirect_stdout
 from pathlib import Path
 from typing import Dict, List
@@ -54,6 +55,14 @@ def initialize_state():
         st.session_state.current_step = 0
     if "vector_workspace" not in st.session_state:
         st.session_state.vector_workspace = None
+    if "sim_sentences" not in st.session_state:
+        st.session_state.sim_sentences = []
+    if "sim_index" not in st.session_state:
+        st.session_state.sim_index = 0
+    if "sim_history" not in st.session_state:
+        st.session_state.sim_history = []
+    if "sim_last_workspace" not in st.session_state:
+        st.session_state.sim_last_workspace = None
 
 
 def initialize_demo(module):
@@ -74,10 +83,21 @@ def reset_demo():
     st.session_state.logs = {}
     st.session_state.current_step = 0
     st.session_state.vector_workspace = None
+    st.session_state.sim_sentences = []
+    st.session_state.sim_index = 0
+    st.session_state.sim_history = []
+    st.session_state.sim_last_workspace = None
 
 
 def parse_documents(raw_text: str) -> List[str]:
     return [line.strip() for line in raw_text.splitlines() if line.strip()]
+
+
+def split_sentences(raw_text: str) -> List[str]:
+    cleaned = " ".join(raw_text.strip().split())
+    if not cleaned:
+        return []
+    return [s.strip() for s in re.split(r"(?<=[.!?])\s+", cleaned) if s.strip()]
 
 
 def project_to_2d(vectors: np.ndarray) -> np.ndarray:
@@ -176,6 +196,44 @@ def build_vector_workspace(
         "points": points,
         "ranked": ranked,
     }
+
+
+def start_sentence_simulation(incoming_text: str):
+    st.session_state.sim_sentences = split_sentences(incoming_text)
+    st.session_state.sim_index = 0
+    st.session_state.sim_history = []
+    st.session_state.sim_last_workspace = None
+
+
+def process_sentence_step(demo, documents: List[str], threshold: float, target_cosine: float):
+    if st.session_state.sim_index >= len(st.session_state.sim_sentences):
+        return
+
+    sentence = st.session_state.sim_sentences[st.session_state.sim_index]
+    workspace = build_vector_workspace(
+        demo,
+        documents,
+        sentence,
+        threshold,
+        target_cosine,
+    )
+
+    picked_index = workspace["picked_index"]
+    picked_doc = workspace["documents"][picked_index]
+    picked_score = float(workspace["scores"][picked_index])
+
+    st.session_state.sim_history.append(
+        {
+            "step": st.session_state.sim_index + 1,
+            "sentence": sentence,
+            "picked_doc": picked_doc,
+            "picked_score": picked_score,
+            "top_matches": workspace["ranked"][:3],
+        }
+    )
+
+    st.session_state.sim_last_workspace = workspace
+    st.session_state.sim_index += 1
 
 
 initialize_state()
@@ -351,6 +409,138 @@ if workspace:
             np.array2string(workspace["doc_vectors"][picked_index][:16], precision=4),
             language="text",
         )
+
+st.divider()
+st.subheader("Sentence-by-Sentence Simulation Tool")
+st.caption(
+    "Simulate incoming text stream: process one sentence at a time and show which vector is picked."
+)
+
+simulation_default = (
+    "Ndiri kufara today because our team closed the sprint. "
+    "Now I am worried about latency in production. "
+    "Can we find documents about food and restaurants?"
+)
+
+sim_col1, sim_col2 = st.columns([2, 1])
+
+with sim_col1:
+    incoming_text = st.text_area(
+        "Incoming text stream",
+        value=simulation_default,
+        height=130,
+        key="simulation_input",
+    )
+
+with sim_col2:
+    sim_threshold = st.slider(
+        "Simulation cosine threshold",
+        min_value=-1.0,
+        max_value=1.0,
+        value=0.15,
+        step=0.01,
+        key="simulation_threshold",
+    )
+    sim_target = st.number_input(
+        "Simulation target cosine",
+        min_value=-1.0,
+        max_value=1.0,
+        value=0.30,
+        step=0.01,
+        key="simulation_target",
+    )
+
+docs_for_simulation = parse_documents(raw_documents)
+
+sim_actions_1, sim_actions_2, sim_actions_3 = st.columns(3)
+with sim_actions_1:
+    if st.button("Start Simulation", type="primary", use_container_width=True):
+        if not docs_for_simulation:
+            st.warning("Please provide at least one document in the document list above.")
+        else:
+            start_sentence_simulation(incoming_text)
+            st.rerun()
+
+with sim_actions_2:
+    if st.button("Process Next Sentence", use_container_width=True):
+        if not docs_for_simulation:
+            st.warning("Please provide at least one document in the document list above.")
+        elif not st.session_state.sim_sentences:
+            st.warning("Click 'Start Simulation' first.")
+        else:
+            process_sentence_step(
+                st.session_state.demo,
+                docs_for_simulation,
+                sim_threshold,
+                float(sim_target),
+            )
+            st.rerun()
+
+with sim_actions_3:
+    if st.button("Process All Remaining", use_container_width=True):
+        if not docs_for_simulation:
+            st.warning("Please provide at least one document in the document list above.")
+        elif not st.session_state.sim_sentences:
+            st.warning("Click 'Start Simulation' first.")
+        else:
+            while st.session_state.sim_index < len(st.session_state.sim_sentences):
+                process_sentence_step(
+                    st.session_state.demo,
+                    docs_for_simulation,
+                    sim_threshold,
+                    float(sim_target),
+                )
+            st.rerun()
+
+if st.session_state.sim_sentences:
+    processed = st.session_state.sim_index
+    total = len(st.session_state.sim_sentences)
+    st.progress(processed / total, text=f"Simulation progress: {processed}/{total} sentences processed")
+
+    if processed < total:
+        st.info(f"Next sentence: {st.session_state.sim_sentences[processed]}")
+    else:
+        st.success("Simulation complete. All sentences processed.")
+
+if st.session_state.sim_history:
+    st.subheader("Simulation Timeline")
+    for item in st.session_state.sim_history:
+        with st.expander(f"Step {item['step']}: {item['sentence']}", expanded=(item["step"] == len(st.session_state.sim_history))):
+            st.write(f"Picked document: {item['picked_doc']}")
+            st.write(f"Picked cosine score: {item['picked_score']:.3f}")
+            st.dataframe(item["top_matches"], use_container_width=True, hide_index=True)
+
+if st.session_state.sim_last_workspace:
+    st.subheader("Current Sentence Vector Map")
+    st.vega_lite_chart(
+        {
+            "data": {"values": st.session_state.sim_last_workspace["points"]},
+            "mark": {"type": "point", "filled": True, "size": 220},
+            "encoding": {
+                "x": {"field": "x", "type": "quantitative", "title": "Projection axis 1"},
+                "y": {"field": "y", "type": "quantitative", "title": "Projection axis 2"},
+                "color": {
+                    "field": "kind",
+                    "type": "nominal",
+                    "scale": {
+                        "domain": ["Query", "Picked", "Selected", "Not selected"],
+                        "range": ["#1f77b4", "#d62728", "#2ca02c", "#7f7f7f"],
+                    },
+                    "title": "Point Type",
+                },
+                "tooltip": [
+                    {"field": "label", "type": "nominal"},
+                    {"field": "kind", "type": "nominal"},
+                    {"field": "cosine", "type": "quantitative", "format": ".3f"},
+                    {"field": "text", "type": "nominal"},
+                ],
+            },
+            "width": "container",
+            "height": 420,
+            "title": "Sentence Simulation: projected vector space",
+        },
+        use_container_width=True,
+    )
 
 outputs_dir = BASE_DIR / "outputs"
 if outputs_dir.exists():

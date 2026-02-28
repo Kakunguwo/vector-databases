@@ -1,4 +1,4 @@
-# Vector Databases, Semantic Search & RAG: Complete Master Guide
+# Vector Databases, Semantic Search & RAG
 
 > A comprehensive deep-dive into embeddings, vector databases, semantic search, and Retrieval Augmented Generation (RAG) for AI applications.
 
